@@ -1,0 +1,21 @@
+# RFC0041.1 "open mode" fixture server: no auth section, so the
+# listeners accept any tenant (RFC 0026 open mode).
+storage:
+  backend: local
+  local:
+    bucket_root: /data/store
+  # Bare (string-class) promotion — supported by the 0.5.0 minimum
+  # server — so `count by attr.model` groups on a promoted column.
+  promoted_attributes:
+    log: [model]
+receiver:
+  enabled: true
+  grpc_addr: "0.0.0.0:4317"
+  http_addr: "0.0.0.0:4318"
+  wal_root: /data/wal
+querier:
+  enabled: true
+  http_addr: "0.0.0.0:4319"
+  # The RFC 0027/0032 MCP surface, for the RFC0041.4 e2e.
+  mcp:
+    enabled: true

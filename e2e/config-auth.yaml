@@ -1,0 +1,24 @@
+# RFC0041.1 "enforcement" fixture server (RFC 0026): two static tokens —
+# one covering the e2e tenant (the success + seeding credential), one
+# covering only another tenant (the 403 case). A missing token is the
+# 401 case. Values arrive as ${env:...} references per RFC 0020 §3.5.
+storage:
+  backend: local
+  local:
+    bucket_root: /data/store
+receiver:
+  enabled: true
+  grpc_addr: "0.0.0.0:4317"
+  http_addr: "0.0.0.0:4318"
+  wal_root: /data/wal
+querier:
+  enabled: true
+  http_addr: "0.0.0.0:4319"
+auth:
+  tokens:
+    - name: e2e-good
+      token: ${env:E2E_TOKEN_GOOD}
+      tenants: [e2e-tenant]
+    - name: e2e-other
+      token: ${env:E2E_TOKEN_OTHER}
+      tenants: [some-other-tenant]
