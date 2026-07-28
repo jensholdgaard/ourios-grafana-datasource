@@ -18,7 +18,7 @@ were all NULL renders as no data, never as zero.
 
 Set the querier URL and the tenant. Requests go through Grafana's data
 proxy, which attaches the `x-ourios-tenant` header server-side — the
-browser never handles tenant selection. Against a querier with
+browser never talks to the querier directly. Against a querier with
 authentication enabled, the tenant is additionally bound server-side to
 the credential.
 

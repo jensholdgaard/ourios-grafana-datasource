@@ -38,7 +38,8 @@ Behaviour worth knowing:
 
 The datasource takes the querier URL and a tenant. Requests go through
 Grafana's data proxy, which attaches `x-ourios-tenant` server-side — the
-browser never handles tenant selection and there is no CORS surface.
+browser never talks to the querier directly and there is no CORS
+surface.
 Provisioning example:
 
 ```yaml
