@@ -28,11 +28,20 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:ci
       - run: npm run build
-  # Container e2e: the wire contract + pure mapping against the released
-  # ourios-server image (the declared minimum server version, as in the
-  # sibling Perses repo's RFC0041.5 posture).
+  # Container e2e matrix: the declared-minimum image tag (0.5.0,
+  # count-family only) alongside latest (typed columns, so the
+  # wire-level sum suite runs), mirroring the Perses repo's
+  # RFC0041.5 posture.
   e2e:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: ghcr.io/jensholdgaard/ourios:0.5.0
+            typed: ""
+          - image: ghcr.io/jensholdgaard/ourios:latest
+            typed: "1"
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -44,7 +53,8 @@ jobs:
       - run: npm ci
       - run: npm run test:container-e2e
         env:
-          OURIOS_IMAGE: ghcr.io/jensholdgaard/ourios:0.5.0
+          OURIOS_IMAGE: ${{ matrix.image }}
+          OURIOS_TYPED: ${{ matrix.typed }}
   # The single required-check anchor, mirroring the sibling repos' ci-success
   # pattern: branch protection and merge gates key off this one name.
   ci-success:

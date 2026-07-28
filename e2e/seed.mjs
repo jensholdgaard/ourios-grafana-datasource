@@ -34,6 +34,12 @@ const payload = {
               body: { stringValue: "hello from the e2e fixture" },
               attributes: [
                 { key: "model", value: { stringValue: "claude-fable-5" } },
+                // Typed-promotion material (RFC 0042): a double and an
+                // int (RFC 0003 §3.6: intValue is a decimal string). On
+                // the 0.5.0 leg these are just stored attributes; on the
+                // typed leg they become Float64/Int64 columns.
+                { key: "cost_usd", value: { doubleValue: 12.5 } },
+                { key: "output_tokens", value: { intValue: "800" } },
               ],
             },
             {
@@ -45,7 +51,9 @@ const payload = {
               attributes: [],
             },
             {
-              // The second bucket(1h) window.
+              // The second bucket(1h) window. Carries the model but NO
+              // cost_usd, so a typed sum over this bucket is an all-NULL
+              // group — the null-stays-null wire case.
               timeUnixNano: T3,
               severityNumber: 9,
               severityText: "INFO",

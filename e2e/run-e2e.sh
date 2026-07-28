@@ -53,8 +53,14 @@ wait_port() { # port
   return 1
 }
 
-echo "== open-mode server =="
-start_server "$OPEN" config-open.yaml "$OPEN-data" 15418 15419
+# OURIOS_TYPED=1 selects the typed-promotion config (server >= 0.6.0
+# only — the 0.5.0 minimum rejects the map-form entries) and turns on
+# the wire-level typed-sum suite.
+OPEN_CONFIG=config-open.yaml
+if [ "${OURIOS_TYPED:-}" = "1" ]; then OPEN_CONFIG=config-open-typed.yaml; fi
+
+echo "== open-mode server ($OPEN_CONFIG) =="
+start_server "$OPEN" "$OPEN_CONFIG" "$OPEN-data" 15418 15419
 wait_port 15419
 node "$HERE/seed.mjs" http://127.0.0.1:15418
 docker stop --time 30 "$OPEN" >/dev/null   # graceful: flushes WAL -> Parquet
@@ -75,4 +81,5 @@ OPEN_QUERY_URL=http://127.0.0.1:15419 \
 AUTH_QUERY_URL=http://127.0.0.1:15519 \
 E2E_TOKEN_GOOD="$E2E_TOKEN_GOOD" \
 E2E_TOKEN_OTHER="$E2E_TOKEN_OTHER" \
+TYPED_E2E="${OURIOS_TYPED:-}" \
   npx jest --config jest.e2e.config.js --runInBand
