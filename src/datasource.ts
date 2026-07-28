@@ -148,7 +148,15 @@ export function timeSeriesFrames(refId: string, rows: OuriosAggregateRow[], buck
       name: series.name,
       fields: [
         { name: 'time', type: FieldType.time, values: series.points.map((p) => p[0]) },
-        { name: series.name, type: FieldType.number, values: series.points.map((p) => p[1]) },
+        // displayNameFromDS is the datasource-owned display name; naming the
+        // FIELD after the series makes Grafana render "name name" in legends
+        // and table headers (frame name + field name concatenated).
+        {
+          name: 'value',
+          type: FieldType.number,
+          config: { displayNameFromDS: series.name },
+          values: series.points.map((p) => p[1]),
+        },
       ],
     });
   });
