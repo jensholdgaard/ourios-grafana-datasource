@@ -1,14 +1,15 @@
 apiVersion: 1
 
 datasources:
-  - name: 'ourios'
-    type: 'ourios-ourios-datasource'
+  - name: ourios
+    uid: ourios
+    type: ourios-ourios-datasource
     access: proxy
-    isDefault: false
+    isDefault: true
     orgId: 1
-    version: 1
     editable: true
     jsonData:
-      path: '/resources'
-    secureJsonData:
-      apiKey: 'api-key'
+      # The dev target: the dogfood querier on the host, agent-dogfood tenant.
+      # The data proxy route attaches x-ourios-tenant from these values.
+      url: http://host.docker.internal:4319
+      tenant: agent-dogfood

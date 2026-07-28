@@ -131,6 +131,10 @@ describe('timeSeriesFrames (RFC0041.3 semantics)', () => {
     const frames = timeSeriesFrames('B', rows, 1);
     expect(frames.map((f) => f.name)).toEqual(['claude-fable-5', 'claude-haiku-4-5']);
     const fable = frames[0];
+    // The series identity rides displayNameFromDS; the field stays 'value'
+    // so Grafana doesn't render "name name" in legends.
+    expect(fable.fields[1].name).toBe('value');
+    expect(fable.fields[1].config.displayNameFromDS).toBe('claude-fable-5');
     expect(fable.fields[1].values).toEqual([12.5, 20.25]);
   });
 
