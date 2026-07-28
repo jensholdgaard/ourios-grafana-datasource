@@ -28,10 +28,27 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:ci
       - run: npm run build
+  # Container e2e: the wire contract + pure mapping against the released
+  # ourios-server image (the declared minimum server version, as in the
+  # sibling Perses repo's RFC0041.5 posture).
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run test:container-e2e
+        env:
+          OURIOS_IMAGE: ghcr.io/jensholdgaard/ourios:0.5.0
   # The single required-check anchor, mirroring the sibling repos' ci-success
   # pattern: branch protection and merge gates key off this one name.
   ci-success:
-    needs: [checks]
+    needs: [checks, e2e]
     if: always()
     runs-on: ubuntu-latest
     steps:
