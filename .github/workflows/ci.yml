@@ -42,7 +42,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm run test:e2e
+      - run: npm run test:container-e2e
         env:
           OURIOS_IMAGE: ghcr.io/jensholdgaard/ourios:0.5.0
   # The single required-check anchor, mirroring the sibling repos' ci-success

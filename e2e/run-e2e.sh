@@ -44,7 +44,7 @@ start_server() { # name, config, data dir, http port, query port, extra docker a
 
 wait_port() { # port
   for _ in $(seq 1 60); do
-    curl -s -o /dev/null "http://127.0.0.1:$1/" && return 0 || true
+    curl -s -m 2 --connect-timeout 2 -o /dev/null "http://127.0.0.1:$1/" && return 0 || true
     sleep 1
   done
   echo "port $1 never answered; container logs:" >&2
