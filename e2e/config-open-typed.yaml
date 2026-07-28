@@ -1,0 +1,24 @@
+# The typed-promotion variant of config-open.yaml, for the e2e matrix leg
+# running a server >= 0.6.0 (RFC 0042): cost/token attributes become real
+# Float64/Int64 columns, so wire-level sum() is exercised end-to-end. The
+# map-form entries are rejected by the 0.5.0 minimum server's config
+# parser, which is why this is a separate file and not the default.
+storage:
+  backend: local
+  local:
+    bucket_root: /data/store
+  promoted_attributes:
+    log:
+      - model
+      - { key: cost_usd, type: f64 }
+      - { key: output_tokens, type: i64 }
+receiver:
+  enabled: true
+  grpc_addr: "0.0.0.0:4317"
+  http_addr: "0.0.0.0:4318"
+  wal_root: /data/wal
+querier:
+  enabled: true
+  http_addr: "0.0.0.0:4319"
+  mcp:
+    enabled: true

@@ -25,6 +25,11 @@ const TENANT = 'e2e-tenant';
 const START = '2026-07-27T09:00:00.000Z';
 const END = '2026-07-27T12:00:00.000Z';
 
+// RFC0002.21 flipped floor semantics between the matrix legs: the 0.5.0
+// declared-minimum leg excludes the seeded severity-0 record from
+// `severity >= trace` (2 rows); from 0.6.0 the floor admits it (3 rows).
+const TRACE_FLOOR_ROWS = process.env.TYPED_E2E === '1' ? 3 : 2;
+
 async function post(
   url: string,
   dsl: string,
@@ -42,7 +47,7 @@ describe('wire contract — open mode', () => {
   it('answers without any credential', async () => {
     const { status, body } = await post(OPEN_URL, withRange('severity >= trace', START, END));
     expect(status).toBe(200);
-    expect(body.rows).toBe(2); // both INFO records; severity 0 is below trace on 0.5.0
+    expect(body.rows).toBe(TRACE_FLOOR_ROWS);
   });
 
   it('keeps a hand-written range instead of overriding it', async () => {
@@ -69,7 +74,7 @@ describe('wire contract — RFC 0026 enforcement (what the data proxy relies on)
       authorization: `Bearer ${GOOD}`,
     });
     expect(status).toBe(200);
-    expect(body.rows).toBe(2);
+    expect(body.rows).toBe(TRACE_FLOOR_ROWS);
   });
 
   it('rejects a missing credential as 401, not 403', async () => {
@@ -151,3 +156,47 @@ describe('timeSeriesFrames on real aggregates', () => {
     ]);
   });
 });
+
+const typed = process.env.TYPED_E2E === '1';
+const describeTyped = typed ? describe : describe.skip;
+
+describeTyped('wire-level typed sums (server >= 0.6.0 leg)', () => {
+  it('sums the Float64 column per model and bucket, an all-NULL bucket staying null', async () => {
+    const { body } = await post(
+      OPEN_URL,
+      withRange('template_id > 0 | sum(attr.cost_usd) by attr.model, bucket(1h)', START, END)
+    );
+    const rows = body.aggregate ?? [];
+    const bucket = bucketIndex(rows);
+    expect(bucket).toBe(1);
+    const frames = timeSeriesFrames('A', rows, bucket!);
+    expect(frames).toHaveLength(1);
+    expect(frames[0].name).toBe('claude-fable-5');
+    // Bucket one carries the seeded 12.5; bucket two's only record has no
+    // cost_usd, so the group sum is NULL — a gap in the frame, NEVER zero.
+    expect(frames[0].fields[1].values).toEqual([12.5, null]);
+  });
+
+  it('sums the Int64 column', async () => {
+    const { body } = await post(
+      OPEN_URL,
+      withRange('template_id > 0 | sum(attr.output_tokens) by bucket(1h)', START, END)
+    );
+    // Locate the bucket by instant, not by string form — the server may
+    // legally emit an equivalent RFC 3339 spelling.
+    const first = (body.aggregate ?? []).find(
+      (r) => Date.parse(r.key[0] ?? '') === Date.parse('2026-07-27T10:00:00Z')
+    );
+    expect(first?.value).toBe(800);
+  });
+});
+
+// The suite must never silently vanish from BOTH legs: on the untyped leg
+// this placeholder documents the deliberate skip.
+if (!typed) {
+  describe('wire-level typed sums (server >= 0.6.0 leg)', () => {
+    it('is skipped on the declared-minimum (0.5.0) leg by design', () => {
+      expect(process.env.TYPED_E2E).not.toBe('1');
+    });
+  });
+}
