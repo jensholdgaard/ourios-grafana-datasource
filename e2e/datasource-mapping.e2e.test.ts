@@ -182,7 +182,11 @@ describeTyped('wire-level typed sums (server >= 0.6.0 leg)', () => {
       OPEN_URL,
       withRange('template_id > 0 | sum(attr.output_tokens) by bucket(1h)', START, END)
     );
-    const first = (body.aggregate ?? []).find((r) => r.key[0] === '2026-07-27T10:00:00Z');
+    // Locate the bucket by instant, not by string form — the server may
+    // legally emit an equivalent RFC 3339 spelling.
+    const first = (body.aggregate ?? []).find(
+      (r) => Date.parse(r.key[0] ?? '') === Date.parse('2026-07-27T10:00:00Z')
+    );
     expect(first?.value).toBe(800);
   });
 });
