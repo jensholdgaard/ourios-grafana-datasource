@@ -36,6 +36,11 @@ jobs:
           pkg="$(node -p "require('./package.json').version")"
           [ "$TAG" = "v$pkg" ] || { echo "::error::tag $TAG != package.json v$pkg"; exit 1; }
       - run: npm ci
+      # The same quality gates CI runs — a tag must not publish what a
+      # PR could not merge.
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:ci
       - run: npm run build
       - name: Package and publish
         env:
