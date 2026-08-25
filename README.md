@@ -34,6 +34,18 @@ Behaviour worth knowing:
 - Series identity is the full group tuple, so a group value containing
   the display delimiter cannot merge two series.
 
+## Install
+
+Download `ourios-ourios-datasource-<version>.zip` from the
+[releases](https://github.com/jensholdgaard/ourios-grafana-datasource/releases),
+extract it into Grafana's plugin directory, and allow the (unsigned)
+plugin id:
+
+```ini
+[plugins]
+allow_loading_unsigned_plugins = ourios-ourios-datasource
+```
+
 ## Configure
 
 The datasource takes the querier URL and a tenant. Requests go through
