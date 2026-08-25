@@ -62,7 +62,12 @@ describe('logsFrame (real Ourios payload)', () => {
     // resource + log attributes both land, values unwrapped from AnyValue
     expect(labels['service.name']).toBe('agent-dogfood');
     expect(labels['event.name']).toBe('user_prompt');
-    expect(labels['template_id']).toBe(14);
+    // Derived record fields carry attribute-context names in the
+    // labels map: the Ourios registry key, never a bare template_id.
+    expect(labels['ourios.template.id']).toBe(14);
+    expect(labels['template_id']).toBeUndefined();
+    expect(labels['otel.scope.name']).toBe('com.anthropic.claude_code.events');
+    expect(labels['scope.name']).toBeUndefined();
   });
 
   it('gives every row a distinct id', () => {

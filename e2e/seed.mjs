@@ -73,6 +73,10 @@ const response = await fetch(`${ingestBase}/v1/logs`, {
   method: "POST",
   headers: {
     "content-type": "application/json",
+    // RFC 0046: tenancy is out-of-band — the header names the tenant
+    // (servers >= 0.9.0 require it; older ones ignore it and derive
+    // from service.name, which the resource still carries).
+    "x-ourios-tenant": "e2e-tenant",
     ...(bearer ? { authorization: `Bearer ${bearer}` } : {}),
   },
   body: JSON.stringify(payload),

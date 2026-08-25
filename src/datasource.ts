@@ -11,7 +11,9 @@ import {
   FieldType,
 } from '@grafana/data';
 import { lastValueFrom } from 'rxjs';
+import { ATTR_OTEL_SCOPE_NAME } from '@opentelemetry/semantic-conventions';
 
+import { OURIOS_TEMPLATE_ID } from './generated/semconv';
 import {
   DEFAULT_QUERY,
   OuriosAggregateRow,
@@ -57,8 +59,15 @@ function labelsOf(rec: OuriosRecord): Record<string, unknown> {
   for (const kv of rec.attributes ?? []) {
     out[kv.key] = anyValue(kv.value);
   }
-  if (rec.scope_name) {out['scope.name'] = rec.scope_name;}
-  if (rec.template_id !== undefined) {out['template_id'] = rec.template_id;}
+  // A labels map is an attribute-keyed namespace, so record fields we
+  // derive into it carry their attribute-context names: the scope name
+  // under the spec's non-OTLP mapping key, the template id under the
+  // Ourios registry key. Injected after the attribute loops: these are
+  // the record's own identity, so they win over a producer attribute
+  // squatting on a reserved (otel.* / ourios.*) key. trace_id/span_id
+  // stay bare — the record-field spelling every log UI links on.
+  if (rec.scope_name) {out[ATTR_OTEL_SCOPE_NAME] = rec.scope_name;}
+  if (rec.template_id !== undefined) {out[OURIOS_TEMPLATE_ID] = rec.template_id;}
   if (rec.trace_id) {out['trace_id'] = rec.trace_id;}
   if (rec.span_id) {out['span_id'] = rec.span_id;}
   return out;
