@@ -25,7 +25,7 @@ command -v weaver >/dev/null || { echo "error: weaver not installed (open-teleme
 # on a partial checkout can never touch the base itself.
 base="${SEMCONV_CHECKOUT_DIR:-${RUNNER_TEMP:-${TMPDIR:-/tmp}}}"
 dest="$base/ourios-semconv-$ref"
-if [ ! -d "$dest/.git" ] || [ ! -d "$dest/registry" ] || [ ! -d "$dest/templates" ]; then
+if [ ! -e "$dest/.git" ] || [ ! -d "$dest/registry" ] || [ ! -d "$dest/templates" ]; then
     rm -rf "$dest"
     git clone --quiet --depth 1 --branch "$ref" \
         https://github.com/jensholdgaard/ourios-semconv.git "$dest" >&2
